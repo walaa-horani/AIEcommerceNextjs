@@ -38,7 +38,7 @@ export async function POST(req: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
 
         try {
-            await createOrderInSanity(session);
+            await createOrderInSanity(session, event.type);
         } catch (error) {
             console.error("Error creating order in Sanity:", error);
             return NextResponse.json({ error: "Error creating order" }, { status: 500 });
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true });
 }
 
-async function createOrderInSanity(session: Stripe.Checkout.Session) {
+async function createOrderInSanity(session: Stripe.Checkout.Session, eventType: string) {
     const {
         id,
         amount_total,
@@ -64,7 +64,7 @@ async function createOrderInSanity(session: Stripe.Checkout.Session) {
 
     try {
         const logPath = path.join(process.cwd(), 'webhook_debug.log');
-        const logMessage = `[${new Date().toISOString()}] Webhook received. Event: ${event.type}. Session ID: ${id}. Metadata: ${JSON.stringify(metadata)}\n`;
+        const logMessage = `[${new Date().toISOString()}] Webhook received. Event: ${eventType}. Session ID: ${id}. Metadata: ${JSON.stringify(metadata)}\n`;
         fs.appendFileSync(logPath, logMessage);
     } catch (e) {
         console.error("Failed to write log", e);

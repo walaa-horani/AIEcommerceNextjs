@@ -191,8 +191,8 @@ export default function ChatPage() {
                         <div
                             key={i}
                             className={`max-w-[70%] rounded-2xl px-4 py-2 text-sm ${msg.role === "user"
-                                    ? "ml-auto border border-gray-300 bg-white text-gray-900 shadow-sm"
-                                    : "bg-gray-100 text-gray-800"
+                                ? "ml-auto border border-gray-300 bg-white text-gray-900 shadow-sm"
+                                : "bg-gray-100 text-gray-800"
                                 }`}
                         >
                             {msg.content}

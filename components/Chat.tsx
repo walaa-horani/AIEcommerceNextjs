@@ -3,6 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { useState, useRef, useEffect } from "react";
 import { Send, User, Bot, Loader2, X, MessageCircle } from "lucide-react";
+import { DefaultChatTransport } from "ai";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
@@ -10,11 +11,16 @@ import { cn } from "@/lib/utils";
 
 export function Chat() {
     const [isOpen, setIsOpen] = useState(false);
+    const [input, setInput] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    const { messages, input, setInput, append, isLoading } = useChat({
-        api: "/api/chat",
+    const { messages, sendMessage, status } = useChat({
+        transport: new DefaultChatTransport({
+            api: "/api/chat",
+        }),
     });
+
+    const isLoading = status === "submitted" || status === "streaming";
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -25,10 +31,9 @@ export function Chat() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!input.trim() || isLoading) return;
-        
-        append({
-            role: "user",
-            content: input,
+
+        sendMessage({
+            text: input,
         });
         setInput("");
     };
@@ -95,7 +100,12 @@ export function Chat() {
                                             ? "bg-primary text-primary-foreground rounded-tr-none"
                                             : "bg-muted border border-border rounded-tl-none"
                                     )}>
-                                        {m.content}
+                                        {m.parts.map((part, i) => {
+                                            if (part.type === "text") {
+                                                return <span key={i}>{part.text}</span>;
+                                            }
+                                            return null;
+                                        })}
                                     </div>
                                 </div>
                             ))}
@@ -119,17 +129,11 @@ export function Chat() {
                             placeholder="Ask about orders..."
                             className="flex-1 bg-background border-border/50 focus:border-primary transition-all text-sm h-9"
                             disabled={isLoading}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSubmit(e);
-                                }
-                            }}
                         />
-                        <Button 
-                            type="submit" 
-                            size="icon" 
-                            disabled={isLoading || !input?.trim()} 
+                        <Button
+                            type="submit"
+                            size="icon"
+                            disabled={isLoading || !input?.trim()}
                             className="h-9 w-9"
                         >
                             <Send className="h-3.5 w-3.5" />
