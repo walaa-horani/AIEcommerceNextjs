@@ -1,0 +1,517 @@
+[
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error",
+            "message": "Email is required"
+          }
+        ],
+        "name": "email",
+        "type": "string"
+      },
+      {
+        "description": "Customer's full name",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "description": "Clerk user ID for authentication",
+        "name": "clerkUserId",
+        "type": "string"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error",
+            "message": "Stripe customer ID is required"
+          }
+        ],
+        "description": "Stripe customer ID for payments",
+        "readOnly": true,
+        "name": "stripeCustomerId",
+        "type": "string"
+      },
+      {
+        "readOnly": true,
+        "name": "createdAt",
+        "type": "datetime"
+      }
+    ],
+    "name": "customer",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error",
+            "message": "Order number is required"
+          }
+        ],
+        "readOnly": true,
+        "name": "orderNumber",
+        "type": "string"
+      },
+      {
+        "of": [
+          {
+            "fields": [
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "to": [
+                  {
+                    "type": "product"
+                  }
+                ],
+                "name": "product",
+                "type": "reference"
+              },
+              {
+                "initialValue": 1,
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      },
+                      {
+                        "flag": "min",
+                        "constraint": 1
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "name": "quantity",
+                "type": "number"
+              },
+              {
+                "validation": [
+                  {
+                    "rules": [
+                      {
+                        "flag": "presence",
+                        "constraint": "required"
+                      }
+                    ],
+                    "level": "error"
+                  }
+                ],
+                "description": "Price at time of purchase",
+                "name": "priceAtPurchase",
+                "type": "number"
+              }
+            ],
+            "type": "object"
+          }
+        ],
+        "name": "items",
+        "type": "array"
+      },
+      {
+        "description": "Total order amount in GBP",
+        "readOnly": true,
+        "name": "total",
+        "type": "number"
+      },
+      {
+        "initialValue": "paid",
+        "options": {
+          "list": [
+            {
+              "title": "Paid",
+              "value": "paid"
+            },
+            {
+              "title": "Shipped",
+              "value": "shipped"
+            },
+            {
+              "title": "Delivered",
+              "value": "delivered"
+            },
+            {
+              "title": "Cancelled",
+              "value": "cancelled"
+            }
+          ],
+          "layout": "radio"
+        },
+        "name": "status",
+        "type": "string"
+      },
+      {
+        "description": "Reference to the customer record",
+        "to": [
+          {
+            "type": "customer"
+          }
+        ],
+        "name": "customer",
+        "type": "reference"
+      },
+      {
+        "description": "Clerk user ID",
+        "readOnly": true,
+        "name": "clerkUserId",
+        "type": "string"
+      },
+      {
+        "readOnly": true,
+        "name": "email",
+        "type": "string"
+      },
+      {
+        "fields": [
+          {
+            "name": "name",
+            "type": "string",
+            "title": "Full Name"
+          },
+          {
+            "name": "line1",
+            "type": "string",
+            "title": "Address Line 1"
+          },
+          {
+            "name": "line2",
+            "type": "string",
+            "title": "Address Line 2"
+          },
+          {
+            "name": "city",
+            "type": "string"
+          },
+          {
+            "name": "postcode",
+            "type": "string"
+          },
+          {
+            "name": "country",
+            "type": "string"
+          }
+        ],
+        "name": "address",
+        "type": "object"
+      },
+      {
+        "description": "Stripe payment intent ID",
+        "readOnly": true,
+        "name": "stripePaymentId",
+        "type": "string"
+      },
+      {
+        "readOnly": true,
+        "name": "createdAt",
+        "type": "datetime"
+      }
+    ],
+    "name": "order",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error",
+            "message": "Product name is required"
+          }
+        ],
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "options": {
+          "source": "name",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error",
+            "message": "Slug is required for URL generation"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "rows": 4,
+        "description": "Product description",
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error",
+            "message": "Price is required"
+          },
+          {
+            "rules": [
+              {
+                "flag": "min",
+                "constraint": 0
+              }
+            ],
+            "level": "error",
+            "message": "Price must be a positive number"
+          }
+        ],
+        "description": "Price in GBP (e.g., 599.99)",
+        "name": "price",
+        "type": "number"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error",
+            "message": "Category is required"
+          }
+        ],
+        "to": [
+          {
+            "type": "category"
+          }
+        ],
+        "name": "category",
+        "type": "reference"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "Wood",
+              "value": "wood"
+            },
+            {
+              "title": "Metal",
+              "value": "metal"
+            },
+            {
+              "title": "Fabric",
+              "value": "fabric"
+            },
+            {
+              "title": "Leather",
+              "value": "leather"
+            },
+            {
+              "title": "Glass",
+              "value": "glass"
+            }
+          ],
+          "layout": "radio"
+        },
+        "name": "material",
+        "type": "string"
+      },
+      {
+        "options": {
+          "list": [
+            {
+              "title": "Black",
+              "value": "black"
+            },
+            {
+              "title": "White",
+              "value": "white"
+            },
+            {
+              "title": "Oak",
+              "value": "oak"
+            },
+            {
+              "title": "Walnut",
+              "value": "walnut"
+            },
+            {
+              "title": "Grey",
+              "value": "grey"
+            },
+            {
+              "title": "Natural",
+              "value": "natural"
+            }
+          ],
+          "layout": "radio"
+        },
+        "name": "color",
+        "type": "string"
+      },
+      {
+        "description": "e.g., \"120cm x 80cm x 75cm\"",
+        "name": "dimensions",
+        "type": "string"
+      },
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "min",
+                "constraint": 1
+              }
+            ],
+            "level": "error",
+            "message": "At least one image is required"
+          }
+        ],
+        "of": [
+          {
+            "options": {
+              "hotspot": true
+            },
+            "type": "image"
+          }
+        ],
+        "name": "images",
+        "type": "array"
+      },
+      {
+        "initialValue": 0,
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "min",
+                "constraint": 0
+              }
+            ],
+            "level": "error",
+            "message": "Stock cannot be negative"
+          }
+        ],
+        "description": "Number of items in stock",
+        "name": "stock",
+        "type": "number"
+      },
+      {
+        "initialValue": false,
+        "description": "Show on homepage and promotions",
+        "name": "featured",
+        "type": "boolean"
+      },
+      {
+        "initialValue": false,
+        "description": "Does this product require assembly?",
+        "name": "assemblyRequired",
+        "type": "boolean"
+      }
+    ],
+    "name": "product",
+    "type": "document"
+  },
+  {
+    "fields": [
+      {
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error",
+            "message": "Category title is required"
+          }
+        ],
+        "name": "title",
+        "type": "string"
+      },
+      {
+        "options": {
+          "source": "title",
+          "maxLength": 96
+        },
+        "validation": [
+          {
+            "rules": [
+              {
+                "flag": "custom"
+              },
+              {
+                "flag": "presence",
+                "constraint": "required"
+              }
+            ],
+            "level": "error",
+            "message": "Slug is required for URL generation"
+          }
+        ],
+        "name": "slug",
+        "type": "slug"
+      },
+      {
+        "options": {
+          "hotspot": true
+        },
+        "description": "Category thumbnail image",
+        "name": "image",
+        "type": "image"
+      }
+    ],
+    "name": "category",
+    "type": "document"
+  }
+]
