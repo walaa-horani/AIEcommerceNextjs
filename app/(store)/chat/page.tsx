@@ -46,6 +46,10 @@ export default function ChatPage() {
     async function sendMessage(customMessage?: string) {
         const text = customMessage ?? message;
         if (!text.trim()) return;
+      if (!user) {
+        setMessages((prev) => [...prev, { role: "assistant", content: "Please sign in to chat." }]);
+        return;
+    }
 
         setMessages((prev) => [...prev, { role: "user", content: text }]);
         setMessage("");
@@ -60,7 +64,7 @@ export default function ChatPage() {
                     clerkUserId: user?.id,
                 }),
             });
-
+            if (!res.ok) throw new Error("Failed to fetch");
             const data = await res.json();
 
             if (data?.type === "orders" && Array.isArray(data.orders)) {
