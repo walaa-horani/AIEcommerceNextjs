@@ -22,62 +22,62 @@ const functions = [
 ];
 
 async function getUserOrders(clerkUserId: string) {
-    return await client.fetch(ORDERS_BY_USER, {
-        clerkUserId,
-    });
+    return await client.fetch(ORDERS_BY_USER, { clerkUserId });
 }
 
 export async function POST(req: Request) {
-    const { message, clerkUserId } = await req.json();
+    try {
+        const { message, clerkUserId } = await req.json();
 
+        // حماية ضد الرسائل الفارغة لمنع خطأ الـ 400
+        if (!message || typeof message !== "string") {
+            return NextResponse.json({ error: "Message is required" }, { status: 400 });
+        }
 
-    const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-            {
-                role: "system",
-                content: `
-You are an ecommerce support assistant.
-The current user's clerkUserId is: ${clerkUserId}.
-You must NEVER ask for the user ID.
-`,
-            },
-            {
-                role: "user",
-                content: message,
-            },
-        ],
-        functions,
-        function_call: "auto",
-    });
+        // حماية ضد عدم تسجيل الدخول
+        if (!clerkUserId) {
+            return NextResponse.json({ reply: "Please sign in to view your orders." });
+        }
 
-    const msg = completion.choices[0].message;
-
-
-    if (msg.function_call?.name === "getUserOrders") {
-        const orders = await getUserOrders(clerkUserId);
-
-
-
-
-        return NextResponse.json({
-            type: "orders",
-            orders: orders.map((o: any) => ({
-                orderNumber: o.orderNumber,
-                status: o.status,
-                total: o.total,
-                items: o.items?.map((i: any) => ({
-                    name: i.product?.name,
-                    image: i.product?.image?.asset?.url,
-                    quantity: i.quantity,
-                    price: i.priceAtPurchase,
-                })),
-            })),
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                {
+                    role: "system",
+                    content: `You are an ecommerce support assistant. User ID: ${clerkUserId}. Never ask for this ID.`,
+                },
+                { role: "user", content: message },
+            ],
+            functions,
+            function_call: "auto",
         });
+
+        const msg = completion.choices[0].message;
+
+        if (msg.function_call?.name === "getUserOrders") {
+            const orders = await getUserOrders(clerkUserId);
+            return NextResponse.json({
+                type: "orders",
+                orders: orders.map((o: any) => ({
+                    id: o._id,
+                    orderNumber: o.orderNumber,
+                    status: o.status,
+                    total: o.total,
+                    items: o.items?.map((i: any) => ({
+                        id: i._key,
+                        name: i.product?.name,
+                        image: i.product?.image?.asset?.url,
+                        quantity: i.quantity,
+                        price: i.priceAtPurchase,
+                    })),
+                })),
+            });
+        }
+
+        return NextResponse.json({ reply: msg.content || "I'm sorry, I couldn't process that." });
+
+    } catch (error: any) {
+        console.error("Chat Error:", error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-
-    return NextResponse.json({
-        reply: msg.content,
-    });
 }
